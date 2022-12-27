@@ -1,0 +1,15 @@
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name:  {{ include "validus-platform-web-ms.fullname" . }}
+  namespace: {{.Values.namespace}}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{.Values.labels.app}}
+  minReplicas: 1
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: {{ .Values.hpa.averageCpuUtilization }}
+
+

@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.Values.labels.app}}
+  namespace: {{.Values.namespace}}
+  labels:
+    app.kubernetes.io/name: {{ include "validus-platform-web-ms.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- range $key, $val := .Values.labels }}
+    {{ $key }}: {{ $val }}
+  {{- end}}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "validus-platform-web-ms.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "validus-platform-web-ms.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- range $key, $val := .Values.extraLabels }}
+        {{ $key }}: {{ $val }}
+      {{- end }}
+      {{- if .Values.deployment_annotations }}
+      annotations:
+      {{- range $key, $val := .Values.deployment_annotations }}
+        {{ $key }}: {{ $val | quote }}
+      {{- end}}
+      {{- end}}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-configmap
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+
+
+
+

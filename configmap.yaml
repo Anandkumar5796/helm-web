@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+data:
+{{- with .Values.envs }}
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+  labels:
+    app.kubernetes.io/name: validus-platform-ms
+    app.kubernetes.io/part-of: validus-platform-ms
